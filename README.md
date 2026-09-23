@@ -150,7 +150,6 @@ Summary:
 In modern Java (Java 9+), the preferred way to create unmodifiable collections is using List.of(), Set.of(), and Map.of(). For earlier versions or when you need to wrap an existing collection, use Collections.unmodifiableXXX().
 
 
-
 6. Core Collection Interfaces in Java
 The Java Collections Framework (in java.util) is built around several core interfaces that define the main types of collections. Here’s a breakdown:
 1. Collection
