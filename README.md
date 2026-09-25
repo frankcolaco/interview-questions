@@ -1,4 +1,4 @@
-# interview-questions
+## interview-questions
 
 ## Collection Types and Iteration
 ## What are legacy collections?
@@ -38,8 +38,6 @@ Reasoning:
 - It is a core part of Java programming for handling groups of objects.
 
 
-
-
 ## What are wrapped collections?
 Wrapped collections in Java refer to collections that are wrapped (or decorated) by special utility methods provided by the Collections class. These methods return a new collection object that adds extra behavior to the original collection. The most common types of wrappers are:
 - Synchronized wrappers (e.g., Collections.synchronizedList(list))
@@ -71,13 +69,13 @@ synchronized(list) {
 }
 ```
 
-## Summary
+Summary
 - Wrapped collections are collections decorated with extra behavior, like synchronization.
 - Synchronized wrappers make individual method calls thread-safe.
 - Compound actions (like iteration or check-then-act) require additional external synchronization.
 - Wrapping does not guarantee complete thread safety for all usage patterns.
 
-## Common misconception:
+Common misconception:
 Many assume that using a synchronized wrapper makes all operations thread-safe, but you still need to be careful with compound actions.
 
 ## What are concurrent collections?
@@ -130,7 +128,7 @@ The main mechanisms used by concurrent collections to achieve thread safety incl
 - Example:
 ```java
 List<String> unmodifiableList = List.of("a", "b", "c");
-Set<Integer> unmodifiableSet = Set.of(1, 2, 3);
+  Set<Integer> unmodifiableSet = Set.of(1, 2, 3);
 Map<String, Integer> unmodifiableMap = Map.of("a", 1, "b", 2);
 ```
 - Behavior:
@@ -344,12 +342,11 @@ In Java, the three primary Set implementations are HashSet, LinkedHashSet, and T
 - Use case: Use when you need a sorted set.
 
 Summary Table
-
 | Implementation | Ordering | Performance (add/contains/remove) |
 | --- | --- | --- |
-| `HashSet` | No guaranteed order | O(1) |
-| `LinkedHashSet` | Insertion order | O(1) |
-| `TreeSet` | Sorted order | O(log n) |
+| HashSet | No order | O(1) |
+| LinkedHashSet | Insertion order | O(1) |
+| TreeSet | Sorted order | O(log n) |
 
 Common Misconceptions
 - HashSet does not sort or maintain any order.
@@ -541,12 +538,10 @@ Key Differences:
 - Use SequencedMap when you need an ordered mapping of keys to values, and want to perform operations based on the order of entries.
 
 Summary Table:
-
 | Interface | Applies To | Sequenced Methods (Examples) |
 | --- | --- | --- |
-| `SequencedCollection` | Elements | `getFirst()`, `getLast()`, `addFirst(E)`, … |
-| `SequencedMap` | Map entries | `firstEntry()`, `lastEntry()`, `putFirst()`, … |
-
+| SequencedCollection | Elements | getFirst(), getLast(), addFirst(E), … |
+| SequencedMap | Map Entries | firstEntry(), lastEntry(), putFirst(), … |
 Why is this distinction important?
 Because sequencing in a map applies to entries (key-value pairs), not just keys or values individually. The methods in SequencedMap are designed to work with the entire entry, reflecting the order in which entries are stored or manipulated.
 We can initialize a sequenced map and retrieve its boundary entries using the following code:
@@ -774,12 +769,10 @@ Common Misconceptions:
 - Some people think only the heap matters, but the JVM’s own memory (non-heap) is just as important for performance and stability.
 - The term “PermGen” was used before Java 8 for class metadata, but it was replaced by “Metaspace” in Java 8 and later.
 Summary Table:
-
 | Memory Type | Purpose | Managed by GC? |
 | --- | --- | --- |
-| Heap | Java objects and instance variables | Yes |
-| Non-heap | Class metadata, code cache, and thread stacks | No |
-
+| Heap | Java objects, instance variables | Yes |
+| Non-Heap | Class metadata, code cache, thread stacks | No |
 What are the Java runtime data areas?
 According to the Java Virtual Machine (JVM) Specification, when a Java program runs, the JVM creates several runtime data areas. These areas are used to store data and manage execution. They are:
 1. Method Area
@@ -802,12 +795,11 @@ According to the Java Virtual Machine (JVM) Specification, when a Java program r
 - Lifetime: Each thread has its own native method stack.
 
 Summary Table:
-
-| Data Area | Scope | Purpose |
+| Data Area | Thread-Shared or Per-Thread | Purpose |
 | --- | --- | --- |
-| Method Area | Shared | Class metadata, static fields, and constants |
+| Method Area | Shared | Class metadata, static fields, constants |
 | Heap | Shared | All objects and arrays |
-| Java Stack | Per-thread | Local variables and method calls |
+| Java Stack | Per-thread | Local variables, method calls |
 | PC Register | Per-thread | Current instruction address |
 | Native Method Stack | Per-thread | Native method calls |
 
@@ -894,13 +886,12 @@ Alternative Heap Layouts
 - G1, for example, still logically separates young and old regions, but the physical layout is more flexible.
 
 Summary Table
-
 | Part | Purpose | Typical Contents |
 | --- | --- | --- |
 | Eden Space | New object allocation | Newly created objects |
 | Survivor Spaces | Hold objects surviving minor GCs | Young objects that survived |
 | Old Generation | Long-lived objects | Mature objects |
-| PermGen/Metaspace | Class metadata and method information | Class definitions and metadata |
+| PermGen/Metaspace | Class metadata, method info, etc. | Class definitions, metadata |
 
 Common Misconceptions
 - PermGen/Metaspace is not for regular objects, only for class metadata.
@@ -1029,13 +1020,12 @@ PermGen vs. Metaspace in Java
 - PermGen: OutOfMemoryError: PermGen space
 - Metaspace: OutOfMemoryError: Metaspace
 Summary Table:
-
 | Aspect | PermGen (Java 7 and below) | Metaspace (Java 8+) |
 | --- | --- | --- |
-| Memory area | Java heap | Native memory |
-| Sizing | Fixed; must be configured | Grows automatically |
-| Configuration flags | `-XX:PermSize`, `-XX:MaxPermSize` | `-XX:MetaspaceSize`, `-XX:MaxMetaspaceSize` |
-| OOM error | `PermGen space` | `Metaspace` |
+| Memory Area | Java Heap | Native Memory |
+| Sizing | Fixed, must be set | Grows automatically |
+| Config Flags | `-XX:PermSize, -XX:MaxPermSize` | `-XX:MetaspaceSize, -XX:MaxMetaspaceSize` |
+| OOM Error | PermGen space | Metaspace |
 Why the change?
 - PermGen was inflexible and often led to memory issues in dynamic class-loading scenarios (like application servers).
 - Metaspace is more flexible and reduces the likelihood of running out of space for class metadata.
@@ -1134,15 +1124,14 @@ What should you look for?
 - If you see frequent warnings about the code cache being full, it’s a sign to tune your JVM options.
 
 7. Summary Table
-
 | Aspect | Details |
 | --- | --- |
 | Purpose | Stores native code from JIT-compiled methods |
-| Location | Native memory outside the Java heap |
-| Size | Configurable with `-XX:ReservedCodeCacheSize` |
-| Full behavior | Stops compiling new methods; performance may drop |
-| Segmentation | Since Java 9: non-method, profiled, and non-profiled segments |
-| Monitoring | Use `jstat`, JMX, or JVM logs |
+| Location | Native memory, outside Java heap |
+| Size | Configurable with -XX:ReservedCodeCacheSize |
+| Full Behavior | Stops compiling new methods, performance may drop |
+| Segmentation | Since Java 9: split into non-method, profiled, and non-profiled segments |
+| Monitoring | Use jstat, JMX, or JVM logs |
 
 What is String interning?
 Answer:
@@ -1209,6 +1198,258 @@ class MemoryLimits {
 - Lines 20–22: We attempt to allocate an array on the heap using the maximum integer size. Because the JVM cannot find enough contiguous space on the heap for this massive object, it throws an OutOfMemoryError.
 Pro tip: In modern Java, interviewers may ask if “all objects” are created on the heap. The answer is technically no. Through a process called escape analysis, the JIT compiler can determine if an object never escapes the method it was created in. If so, it can perform scalar replacement, breaking the object down and allocating its primitives directly on the stack to save heap space and reduce garbage collection overhead.
 Understanding JVM memory organization helps diagnose memory and performance issues. Distinguishing among heap, non-heap, and native memory also provides context for garbage collection and reference types in the next lessons
+
+Reference Strengths
+Explore how different Java reference strengths—strong, soft, weak, and phantom—impact garbage collection and memory use. Understand how to manage object lifecycles for efficient resource handling and to avoid memory leaks, enabling you to write memory-conscious Java applications.
+Java usually manages memory automatically. However, we can influence when objects become eligible for garbage collection by using different reference strengths. Ordinary Java references are strong references by default. Soft references may be cleared in response to memory pressure, weak references may be cleared when an object is only weakly reachable, and phantom references support post-mortem cleanup tracking.
+The Four Reference Types in Java
+Java provides four types of references, which determine how the garbage collector treats referenced objects. They are, in order of decreasing “strength”:
+- Strong Reference
+- What it is: This is the default type of reference in Java. Any normal object reference (e.g., String s = new String("hello");) is a strong reference.
+- Garbage Collection: As long as a strong reference exists to an object, the object will not be garbage collected.
+- Usage: Most objects you create and use in Java are accessed via strong references.
+- Soft Reference
+- What it is: Created using the SoftReference class in java.lang.ref.
+- Garbage Collection: Objects referenced only by soft references are collected only when the JVM absolutely needs memory (i.e., before throwing an OutOfMemoryError).
+- Usage: Useful for implementing memory-sensitive caches.
+- Weak Reference
+- What it is: Created using the WeakReference class in java.lang.ref.
+- Garbage Collection: Objects referenced only by weak references are collected as soon as there are no strong or soft references to them.
+- Usage: Commonly used in data structures like WeakHashMap, where you want entries to be removed automatically when their keys are no longer in ordinary use.
+- Phantom Reference
+- What it is: Created using the PhantomReference class in java.lang.ref.
+- Garbage Collection: Phantom references do not prevent their referents from being collected. After the object is finalized and ready for collection, the phantom reference is enqueued in a reference queue.
+- Usage: Used for more advanced resource cleanup, such as managing off-heap memory or other resources that need to be released after an object is truly gone.
+Why This Matters
+- Strong references keep objects alive.
+- Soft and weak references allow objects to be collected under different conditions, which is useful for memory-sensitive applications.
+- Phantom references are for advanced cleanup scenarios.
+Common Misconceptions
+- All references except strong references are found in the java.lang.ref package.
+- Soft and weak references are not the same: soft references are more “persistent” than weak references.
+- Phantom references cannot be used to access the referent object (their get() method always returns null).
+
+What is a strong reference?
+A strong reference in Java is the default type of reference created when you assign an object to a variable, like this:
+
+```java
+Object obj = new Object();
+```
+
+As long as there is at least one strong reference to an object, the Java Garbage Collector will never reclaim (delete) that object from memory. In other words, the object is considered “strongly reachable” and will not be garbage collected.
+Key Points:
+- Most references you use in Java are strong references.
+- An object remains in memory as long as it is accessible through a chain of strong references from a “GC root” (like local variables on the stack, static fields, etc.).
+- Only when there are no strong references to an object does it become eligible for garbage collection.
+Why is this important? Understanding strong references helps you manage memory effectively and avoid memory leaks. If you keep strong references to objects you no longer need, they will not be garbage collected, which can lead to increased memory usage.
+Contrast with other reference types: Java also has weak, soft, and phantom references, which allow objects to be collected under different circumstances, but strong references are the default and most common.
+
+What are weak references in Java?
+A weak reference in Java is a type of reference object provided by the java.lang.ref package, specifically the WeakReference class. Unlike a strong reference (the default in Java), a weak reference does not prevent its referent (the object it points to) from being reclaimed by the garbage collector.
+How does it work?
+- If an object is only referenced by weak references (meaning there are no strong or soft references to it), the garbage collector is free to reclaim the object’s memory at the next collection cycle.
+- After the object is collected, the weak reference will return null when you call its get() method.
+Why are weak references useful?
+- They allow you to associate data with objects without preventing those objects from being garbage collected.
+- A common use case is in data structures like WeakHashMap, where the keys are held using weak references. If a key is no longer in use elsewhere, it can be garbage collected, and its entry is automatically removed from the map.
+Example:
+```java
+WeakReference<MyObject> weakRef = new WeakReference<>(new MyObject());
+// If there are no strong references to MyObject, it can be collected.
+```
+
+Summary:
+- Weak references allow referenced objects to be garbage collected.
+- Useful for memory-sensitive caches or mappings (like WeakHashMap).
+- They help avoid memory leaks by not unnecessarily prolonging the life of objects.
+Common misconception:
+Some think weak references delay garbage collection, but actually, they allow collection as soon as there are no strong or soft references left.
+To see how a weak reference behaves when the strong reference is removed, consider the following example.
+
+```java
+import java.lang.ref.WeakReference;
+
+class Demonstration {
+    public static void main(String args[]) {
+        String str = new String("Educative.io"); 
+        WeakReference<String> myString = new WeakReference<>(str);
+        
+        str = null; 
+        
+        System.gc();
+
+        if (myString.get() != null) {
+            System.out.println(myString.get());
+        } else {
+            System.out.println("String object has been cleared by the Garbage Collector.");
+        }
+    }
+}
+```
+- Line 5: We create a new String object. This is our strong reference. (Note: We explicitly use new String() here instead of a string literal. String literals are stored in the String Pool and are not easily garbage collected.)
+- Line 6: We wrap the string in a WeakReference.
+- Line 8: We nullify the strong reference, making the object only weakly reachable.
+- Line 10: We suggest that the GC run using System.gc().
+- Lines 12–16: We call myString.get() to retrieve the referent. If the GC ran and collected the object, this will return null.
+
+What are soft references?
+In Java, a soft reference is a type of reference defined in the java.lang.ref package, specifically with the class SoftReference<T>. Unlike strong references (the default in Java), soft references allow the garbage collector (GC) to reclaim the referenced object only when the JVM is running low on memory.
+Key points:
+- As long as there is enough memory available, objects referenced only by soft references will not be collected.
+- When memory becomes scarce, the GC may clear soft references to free up space, but only before throwing an OutOfMemoryError.
+- This makes soft references useful for implementing memory-sensitive caches: cached objects remain available while memory is plentiful, but can be reclaimed if needed.
+- Example usage: SoftReference<MyObject> ref = new SoftReference<>(myObject);
+Why not always use soft references for caching?
+- While soft references seem ideal for caches, their behavior can be unpredictable across different JVM implementations and versions.
+- Modern cache libraries (like Caffeine or Guava) often provide better performance and more predictable eviction policies than relying solely on soft references.
+Summary:
+A soft reference keeps its referent alive until the JVM is under memory pressure, at which point the GC may clear it. This makes them suitable for memory-sensitive caches, as entries are kept as long as memory is available and are reclaimed before an OutOfMemoryError is thrown.
+
+Reasoning:
+- Soft references are weaker than strong references but stronger than weak references.
+- They are specifically designed to help with memory-sensitive caching.
+- The JVM guarantees that all softly reachable objects are cleared before running out of memory.
+
+Difference between Weak and Soft Reference:
+In Java, both weak and soft references are types of references that allow objects to be garbage collected, but they differ in how and when the garbage collector reclaims the referenced objects.
+- Weak Reference:
+A weak reference does not prevent its referent (the object it points to) from being reclaimed by the garbage collector. As soon as the only references to an object are weak references, the next garbage collection cycle can reclaim that object immediately. Weak references are typically used for things like canonicalizing maps, where you don’t want the reference to extend the object’s lifetime.
+- Soft Reference:
+A soft reference is a little stronger than a weak reference. The garbage collector will only reclaim softly-referenced objects when the JVM is running low on memory. This means that as long as there is enough memory, the object will be kept alive. Soft references are commonly used for implementing memory-sensitive caches, where you want to keep objects around as long as possible, but allow them to be collected if memory is needed elsewhere.
+Key Differences:
+- Timing of Collection:
+- Weak references: Collected eagerly, as soon as the object is only weakly reachable.
+- Soft references: Collected lazily, only when memory is low.
+- Use Cases:
+- Weak references: Good for canonicalizing maps or registries.
+- Soft references: Good for caches that should be cleared under memory pressure.
+Why?
+- Weak references are for objects you don’t want to keep alive unnecessarily.
+- Soft references are for objects you’d like to keep alive if possible, but are willing to let go if memory is tight.
+Common Misconceptions:
+- Some think both are the same, but the difference is in how aggressively the garbage collector reclaims the objects.
+- Neither type of reference guarantees immediate collection; it’s always up to the garbage collector, but weak references are much more likely to be cleared quickly.
+
+ReferenceQueue in Java:
+A ReferenceQueue is used in conjunction with reference objects (like WeakReference, SoftReference, and PhantomReference) to allow your program to be notified when the garbage collector determines that an object is no longer reachable and is ready to be reclaimed.
+How it works:
+- When you create a reference object (for example, a WeakReference), you can associate it with a ReferenceQueue.
+- When the garbage collector detects that the referent (the object being referenced) is no longer strongly reachable, it will:
+- Clear the reference (for WeakReference and SoftReference), or
+- Enqueue the reference object onto the associated ReferenceQueue.
+- Your program can poll or remove references from the queue. This allows you to perform cleanup actions, such as removing entries from a cache or releasing resources associated with the object.
+Why is this useful?
+- It gives you a way to know exactly when an object has been collected, so you can take further action (like cleaning up related resources).
+- This is especially important for PhantomReference, which is only useful when used with a ReferenceQueue.
+Modern Java:
+- Since Java 9, the Cleaner API provides a safer and easier way to register cleanup actions for objects, internally using phantom references and reference queues.
+Summary: A ReferenceQueue lets your program be notified when the garbage collector is about to reclaim an object referenced by a reference object, enabling you to perform post-GC cleanup.
+
+Why is this the answer?
+- It covers the purpose of ReferenceQueue.
+- It explains how it works with reference objects.
+- It mentions practical use cases.
+- It connects to modern Java best practices.
+
+Here’s how we register a cleanup action using the modern Cleaner API.
+
+```java
+import java.lang.ref.Cleaner;
+
+class ResourceCleanup implements Runnable {
+    public void run() {
+        System.out.println("Cleaning up resource.");
+    }
+}
+
+class Demonstration {
+    public static void main(String[] args) {
+        Cleaner cleaner = Cleaner.create();
+        Object myObject = new Object();
+        
+        cleaner.register(myObject, new ResourceCleanup());
+        
+        myObject = null;
+        System.gc();
+    }
+}
+```
+
+- Lines 3–7: We define a Runnable that holds our cleanup logic. This class must not hold a strong reference to the object being cleaned up, or the object will never be collected.
+- Line 11: We create a Cleaner instance.
+- Line 14: We register our target object and the cleanup task. Once myObject becomes phantom reachable, the Cleaner thread will automatically invoke the run() method.
+
+What are phantom references?
+A phantom reference in Java is a type of reference provided by the java.lang.ref.PhantomReference class. It is the weakest among all reference types (strong, soft, weak, and phantom). Phantom references are used to determine exactly when an object has been removed from memory, allowing you to perform cleanup actions after garbage collection.
+Key Points:
+- Behavior:
+- The get() method of a PhantomReference always returns null. This means you cannot retrieve the referent object through the reference.
+- When the garbage collector determines that an object is phantom reachable (i.e., it is no longer strongly, softly, or weakly reachable), it will enqueue the phantom reference onto a ReferenceQueue (if provided).
+- Purpose:
+- Phantom references are mainly used for scheduling post-mortem cleanup actions, such as releasing native resources, after the object has been finalized and is about to be reclaimed by the garbage collector.
+- They are safer and more flexible than using the deprecated finalize() method.
+- Java 9 Change:
+- Since Java 9, the referent of a phantom reference is cleared before the reference is enqueued. This prevents any possibility of resurrecting the object.
+- Usage:
+- Direct use of PhantomReference is rare. Instead, Java provides the java.lang.ref.Cleaner API, which is built on top of phantom references and is the recommended way to perform cleanup actions.
+Summary Table of Reference Types:
+| Reference Type | Cleared by GC? | get() returns referent? | Enqueued before/after GC? | Use Case |
+| --- | --- | --- | --- | --- |
+| Strong Reference | No | Yes | N/A | Normal object usage |
+| Soft Reference | Sometimes | Yes (if not GC’d) | After GC | Caching, memory-sensitive caches |
+| Weak Reference | Yes | Yes (if not GC’d) | After GC | Weak maps, canonicalizing caches |
+| Phantom Reference | Yes | Always null | After GC | Post-mortem cleanup |
+Common Misconceptions:
+- You cannot use a phantom reference to access the object after it becomes phantom reachable.
+- Phantom references are not for preventing garbage collection, but for being notified after collection.
+
+Why is this correct?
+- It covers the definition, behavior, purpose, and changes in recent Java versions.
+- It clarifies how phantom references differ from other reference types.
+- It addresses common misconceptions and best practices.
+Given a custom PhantomReference subclass that keeps a strong field referencing its own referent, what happens when we poll its ReferenceQueue?
+
+Correct Answer
+If your custom PhantomReference subclass holds a strong reference to its referent (for example, via a field like private Object strongRef;), then the referent will never become eligible for garbage collection. As a result, the phantom reference will never be enqueued onto the ReferenceQueue.
+If you call ReferenceQueue.remove() (which blocks until a reference is enqueued), your program will block indefinitely (or until a timeout, if you use remove(long timeout)). If you call ReferenceQueue.poll(), it will always return null.
+
+Step-by-Step Reasoning
+- PhantomReference Basics:
+- A PhantomReference is enqueued after the garbage collector determines that the referent is phantom reachable (i.e., no strong, soft, or weak references exist).
+- Only then does the JVM enqueue the phantom reference onto its ReferenceQueue.
+- Strong Reference in Subclass:
+- If your subclass keeps a strong reference to the referent (e.g., this.strongRef = referent;), then as long as the PhantomReference object itself is reachable, so is the referent.
+- This means the referent is never eligible for garbage collection.
+- Effect on ReferenceQueue:
+- Since the referent is never collected, the phantom reference is never enqueued.
+- Therefore, ReferenceQueue.remove() will block forever, and ReferenceQueue.poll() will always return null.
+
+Why This Happens
+- The purpose of reference objects (like PhantomReference) is to allow the referent to be collected when no strong references exist.
+- By holding a strong reference inside the reference object itself, you defeat this purpose: the referent is always reachable as long as the reference object is.
+- This is a common pitfall and is why the Java documentation warns against storing strong references to the referent inside reference objects.
+
+Key Takeaway
+Never store a strong reference to the referent inside a reference object (like a PhantomReference). Doing so prevents garbage collection and breaks the intended behavior of reference queues.
+To visualize the problem described in above question look at this “gotcha” example.
+
+```java
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
+
+class CustomReference<T> extends PhantomReference<T> {
+    T referent; // Anti-pattern: this strong reference defeats the purpose
+
+    public CustomReference(T referent, ReferenceQueue<T> q) {
+        super(referent, q);
+        this.referent = referent;
+    }
+}
+```
+
+- Line 4: We declare a strong reference field named referent.
+- Line 9: We store the passed object in the strong reference field. Because the CustomReference itself is still alive in our application, this strong reference prevents the garbage collector from reclaiming the T object, completely breaking the phantom reference mechanism.
+Understanding how to use these reference types allows us to build memory-efficient applications and safely release resources without relying on the unpredictable and deprecated finalization mechanism.
 
 
 Garbage Collection
@@ -1288,15 +1529,14 @@ Deprecated/Removed Collectors
 - Concurrent Mark Sweep (CMS): Deprecated in Java 9, removed in Java 14. For low-latency needs, use G1, ZGC, or Shenandoah instead.
 
 Summary Table
-
 | Collector | Flag | Key Feature | Use Case |
 | --- | --- | --- | --- |
-| Serial | `-XX:+UseSerialGC` | Single-threaded and simple | Small heaps or single CPU |
-| Parallel | `-XX:+UseParallelGC` | Multi-threaded; throughput-oriented | Large heaps with a throughput focus |
-| G1 | `-XX:+UseG1GC` | Region-based and predictable | Balanced workloads; default since Java 9 |
-| ZGC | `-XX:+UseZGC` | Low-latency and scalable | Large heaps with low pause requirements |
-| Shenandoah | `-XX:+UseShenandoahGC` | Low-latency and concurrent | Large heaps with low pause requirements |
-| Epsilon | `-XX:+UseEpsilonGC` | No-op; no memory reclamation | Testing and benchmarking |
+| Serial | `-XX:+UseSerialGC` | Single-threaded, simple | Small heaps, single CPU |
+| Parallel | `-XX:+UseParallelGC` | Multi-threaded, throughput | Large heaps, throughput focus |
+| G1 | `-XX:+UseG1GC` | Region-based, predictable | Balanced, default since Java 9 |
+| ZGC | `-XX:+UseZGC` | Low-latency, scalable | Large heaps, low pause |
+| Shenandoah | `-XX:+UseShenandoahGC` | Low-latency, concurrent | Low pause, large heaps |
+| Epsilon | `-XX:+UseEpsilonGC` | No-op, no memory reclamation | Testing, benchmarking |
 
 Why This Is Correct
 - These are the main collectors available in modern Java (Java 11+ and Java 17/21 LTS).
@@ -1401,3 +1641,4 @@ Common Misconceptions
 - Sometimes, “major GC” and “full GC” are used interchangeably, but technically, a full GC always includes the entire heap, while a major GC may only include the old generation.
 - Minor GCs do not collect objects from the old generation.
 Understanding garbage collection concepts and collector behavior helps us evaluate JVM memory settings and collector options. In the next lesson, we will examine memory-tuning techniques and methods for detecting memory leaks.
+Clients et prospects d'American Express: Pour plus d'informations sur la façon dont nous protégeons votre vie privée, veuillez visiter www.americanexpress.com/privacy. Si vous êtes situé à l'extérieur des États-Unis, veuillez sélectionner votre emplacement à l'adresse www.americanexpress.com/change-country/ et accéder au lien de confidentialité en bas de la page.
