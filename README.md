@@ -21,10 +21,10 @@ Legacy collections are the original collection classes/interfaces from Java 1.0,
 
 
 ## What is the collections framework?
-Answer:
+**Answer:**
 The Collections Framework in Java is a unified architecture for representing and manipulating collections—groups of objects—such as lists, sets, and maps. Introduced in JDK 1.2, it provides a set of interfaces (like List, Set, Map, Queue) and their implementations (such as ArrayList, HashSet, HashMap, LinkedList, etc.), along with algorithms to operate on them (like sorting and searching).
 The framework standardizes how collections are handled, making it easier to write efficient, reusable, and maintainable code. It also includes utility classes (like Collections and Arrays) for common operations. By default, most implementations are not thread-safe, which improves performance for single-threaded scenarios, but thread-safe versions can be created if needed.
-Key points:
+**Key points:**
 - Provides interfaces, implementations, and algorithms for working with collections.
 - Supports different types of collections (lists, sets, maps, queues).
 - Promotes code reusability and interoperability.
@@ -32,7 +32,7 @@ Key points:
 - Not thread-safe by default, but thread-safe versions are available if needed.
 Why is it important? It simplifies programming by providing ready-to-use data structures and algorithms, reducing the need to write custom collection classes.
 
-Reasoning:
+**Reasoning**:
 - The framework organizes collections into a hierarchy of interfaces and classes.
 - It improves performance and flexibility compared to legacy classes.
 - It is a core part of Java programming for handling groups of objects.
@@ -44,8 +44,8 @@ Wrapped collections in Java refer to collections that are wrapped (or decorated)
 - Unmodifiable wrappers (e.g., Collections.unmodifiableList(list))
 In the context of your question, we’re focusing on the synchronized (thread-safe) wrappers.
 
-Does wrapping a collection always make it thread-safe?
-Short answer:
+## Does wrapping a collection always make it thread-safe?
+**Short answer:**
 Wrapping a collection with Collections.synchronizedXXX() makes the collection’s individual method calls thread-safe, but it does not make all compound actions automatically thread-safe.
 Why?
 - The wrapper synchronizes each method call, so two threads can’t simultaneously execute a method on the collection.
@@ -69,18 +69,18 @@ synchronized(list) {
 }
 ```
 
-Summary
+**Summary**
 - Wrapped collections are collections decorated with extra behavior, like synchronization.
 - Synchronized wrappers make individual method calls thread-safe.
 - Compound actions (like iteration or check-then-act) require additional external synchronization.
 - Wrapping does not guarantee complete thread safety for all usage patterns.
 
-Common misconception:
+**Common misconception:**
 Many assume that using a synchronized wrapper makes all operations thread-safe, but you still need to be careful with compound actions.
 
 ## What are concurrent collections?
 Concurrent collections in Java are special implementations of collection classes (like lists, maps, sets, and queues) that are designed to be safely used by multiple threads at the same time, without requiring external synchronization (like manually using synchronized blocks).
-Key Points:
+**Key Points:**
 - Thread Safety Without Manual Locking:
 - Traditional collections (like ArrayList, HashMap) are not thread-safe.
 - Synchronized wrappers (like Collections.synchronizedList) provide thread safety but can be inefficient because they lock the entire collection for every operation.
@@ -95,7 +95,7 @@ Key Points:
 - Higher throughput and scalability compared to synchronized collections.
 - No need for client-side locking.
 - Designed for concurrent access patterns.
-Example:
+**Example:**
 ```java
 ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
 map.put("apple", 1);
@@ -103,7 +103,7 @@ map.put("banana", 2);
 ```
 Multiple threads can safely read and write to this map without additional synchronization.
 
-Summary:
+**Summary:**
 Concurrent collections are thread-safe collection classes in Java’s java.util.concurrent package, designed to allow efficient and safe access by multiple threads, using advanced concurrency techniques like segmented locking, CAS, and copy-on-write.
 
 The main mechanisms used by concurrent collections to achieve thread safety include:
@@ -144,11 +144,11 @@ Key Differences:
 - Collections.unmodifiableXXX() is a wrapper; changes to the original collection are reflected.
 - List.of(), etc., create a new, immutable collection.
 
-Summary:
+**Summary:**:
 In modern Java (Java 9+), the preferred way to create unmodifiable collections is using List.of(), Set.of(), and Map.of(). For earlier versions or when you need to wrap an existing collection, use Collections.unmodifiableXXX().
 
 
-6. Core Collection Interfaces in Java
+## Core Collection Interfaces in Java
 The Java Collections Framework (in java.util) is built around several core interfaces that define the main types of collections. Here’s a breakdown:
 1. Collection
 - The root interface for most collection types (except maps).
@@ -183,11 +183,11 @@ Why These Matter
 - These interfaces define the contracts for how collections behave in Java.
 - Implementations provide concrete data structures with different performance and ordering characteristics.
 
-Common Misconceptions:
+**Common Misconceptions:**
 - Map is not a subtype of Collection.
 - Deque is a subtype of Queue, which itself is a subtype of Collection.
 
-7. The Difference Between Iterator and Iterable in Java
+## The Difference Between Iterator and Iterable in Java
 1. Iterable Interface:
 - The Iterable interface represents a collection of objects that can be iterated (looped) over.
 - It has a single method: iterator(), which returns an Iterator.
@@ -228,15 +228,15 @@ Some people think Iterator and Iterable are interchangeable, but they serve diff
 - Iterator = does the actual iterating
 
 
-8. How is it possible to get a ConcurrentModificationException from single-threaded code?
-Answer:
+## How is it possible to get a ConcurrentModificationException from single-threaded code?
+**Answer:**
 A ConcurrentModificationException can occur in single-threaded code when you modify a collection directly while iterating over it using a fail-fast iterator.
-Reasoning:
+****Reasoning:**:**
 - In Java, many collection classes (like ArrayList, HashSet, etc.) provide iterators that are “fail-fast.”
 - When you create an iterator (e.g., via iterator() or in a for-each loop), the iterator keeps track of the collection’s modification count (modCount).
 - If you modify the collection structurally (e.g., add or remove elements) directly through the collection itself (not through the iterator’s own remove() method) while iterating, the iterator detects that the collection’s modCount has changed unexpectedly.
 - When the iterator notices this during its next operation (like next() or hasNext()), it throws a ConcurrentModificationException.
-Example:
+**Example:**
 ```java
 List<String> list = new ArrayList<>();
 list.add("A");
@@ -275,7 +275,7 @@ If a LinkedList somehow contains more than Integer.MAX_VALUE elements (for examp
 - Or, if not capped, it may wrap around and return a negative number.
 However, according to the Java SE documentation, the behavior is undefined if the collection exceeds Integer.MAX_VALUE elements. In practice, most implementations will cap the value at Integer.MAX_VALUE.
 
-Summary:
+**Summary:**:
 - The size() method will return 2,147,483,647 (Integer.MAX_VALUE), not the true count if the collection exceeds this limit.
 
 Common Misconception:
@@ -341,7 +341,7 @@ In Java, the three primary Set implementations are HashSet, LinkedHashSet, and T
 - Performance: Basic operations like add, remove, and contains take logarithmic time (O(log n)) because it uses a Red-Black tree.
 - Use case: Use when you need a sorted set.
 
-Summary Table
+**Summary Table:**
 | Implementation | Ordering | Performance (add/contains/remove) |
 | --- | --- | --- |
 | HashSet | No order | O(1) |
@@ -381,7 +381,7 @@ The Map interface in Java does not extend the Collection interface because their
 - Collection (and its subinterfaces like List and Set) represents a group of individual elements. It provides methods for adding, removing, and iterating over single elements.
 - Map, on the other hand, represents a mapping between unique keys and values (key-value pairs). It does not store elements as single objects, but as pairs, and its operations are centered around keys and values rather than just elements.
 If Map extended Collection, it would have to support operations like add(E element), which don’t make sense for key-value pairs. The semantics and contracts of Collection methods do not fit the key-value structure of a Map.
-Summary:
+**Summary:**:
 A Map is not a true collection of elements, but a collection of mappings (associations between keys and values), so it does not extend Collection.
 
 What are the most common implementations of Map?
@@ -441,7 +441,7 @@ The Sequenced Collections API (introduced in Java 21) solves this problem by:
 In summary:
 The Sequenced Collections API unifies and standardizes how you access and manipulate the first and last elements of ordered collections in Java, making code more consistent and easier to maintain.
 
-Reasoning:
+**Reasoning:**:
 Your question asked about the problem solved by the Sequenced Collections API. The main issue was the lack of a unified way to work with the ends of ordered collections, leading to inconsistent and sometimes awkward code. The new API addresses this by providing a common interface and methods for all such collections.
 
 Question:
@@ -469,12 +469,12 @@ The API introduces three core interfaces in the java.util package to handle orde
 - Provides ordered access to entries, keys, and values.
 - Includes methods like firstEntry, lastEntry, pollFirstEntry, pollLastEntry, and reversed().
 
-Reasoning:
+**Reasoning:**:
 - These interfaces were introduced to standardize and unify the way Java collections handle ordering, especially at both ends (head and tail).
 - Previously, different collections (like LinkedList, Deque, LinkedHashMap) had their own ways of handling order, but there was no common interface.
 - With these interfaces, you can write code that works with any ordered collection or map, not just specific implementations.
 
-Common Misconceptions:
+**Common Misconceptions:**
 - Some might think only SequencedCollection was added, but there are three: SequencedCollection, SequencedSet, and SequencedMap.
 - These interfaces are not classes; they define contracts for ordering behavior.
 
@@ -488,14 +488,14 @@ The SequencedCollection interface in Java provides a set of intuitive methods to
 - removeFirst() – removes and returns the first element.
 - removeLast() – removes and returns the last element.
 - reversed() – returns a view of the collection in reverse order.
-Reasoning:
+**Reasoning:**:
 - The purpose of SequencedCollection is to provide a unified way to work with collections that have a defined order (like lists and deques).
 - With these methods, you can easily access or modify elements at the start or end of the collection, which was previously more cumbersome with just the List or Deque interfaces.
 - For example, if you have a List<String> list = new ArrayList<>();, since List now implements SequencedCollection, you can call list.getFirst() or list.addLast("hello") directly.
 Why this is correct:
 - The methods mentioned are part of the SequencedCollection interface, introduced in Java 21.
 - These methods are now available on standard list and deque implementations, making element access and manipulation more expressive and consistent.
-Common misconceptions:
+**Common Misconceptions:**
 - Some might think these methods are only for deques, but with SequencedCollection, they are available for lists as well.
 - Remember, these methods operate on the logical sequence of the collection, not just physical positions.
 We can observe how to use these unified methods on a standard list in the following example:
@@ -537,7 +537,7 @@ Key Differences:
 - Use SequencedCollection when you need an ordered collection of elements.
 - Use SequencedMap when you need an ordered mapping of keys to values, and want to perform operations based on the order of entries.
 
-Summary Table:
+**Summary Table:**:
 | Interface | Applies To | Sequenced Methods (Examples) |
 | --- | --- | --- |
 | SequencedCollection | Elements | getFirst(), getLast(), addFirst(E), … |
@@ -643,10 +643,10 @@ How does HashMap handle collisions?
 - When retrieving a value, HashMap first computes the index using the key’s hash code.
 - It then traverses the linked list (or tree) at that index, comparing each key using the equals() method until it finds the correct one.
 Example: Suppose keys “cat” and “dog” both hash to index 5. The bucket at index 5 will contain a linked list (or tree) with both entries. When you look up “cat”, HashMap will check each entry at index 5 and use equals() to find the right key.
-Summary:
+**Summary:**:
 - Collisions are handled by storing multiple entries in a single bucket using a linked list or tree.
 - Retrieval involves searching through these entries to find the correct key.
-Common Misconceptions:
+**Common Misconceptions:**
 - Colliding keys do NOT overwrite each other unless they are considered equal by equals().
 - The array index is not unique to each key; collisions are expected and handled internally.
 
@@ -680,11 +680,11 @@ This process helps maintain efficient lookup and insertion times by minimizing t
 Why is this important?
 - If the load factor is too high, the hash table will have many collisions, which degrades performance.
 - If the load factor is too low, the hash table will use more memory than necessary.
-Summary:
+**Summary:**:
 - The load factor controls when resizing happens.
 - When the number of entries exceeds (capacity × load factor), the map resizes (doubles its capacity) and rehashes all entries.
 
-Common Misconceptions:
+**Common Misconceptions:**
 - Some think resizing happens every time a new entry is added, but it only happens when the threshold (capacity × load factor) is exceeded.
 - The load factor is not a fixed number of entries; it’s a ratio.
 
@@ -761,14 +761,14 @@ The Java Virtual Machine (JVM) manages two main types of memory:
 - Code Cache: Stores compiled native code generated by the Just-In-Time (JIT) compiler.
 - Thread Stacks: Each Java thread has its own stack, which stores method frames, local variables, and partial results.
 - Native Memory: Used for JVM internal structures and sometimes for direct memory access (e.g., NIO buffers).
-Reasoning:
+**Reasoning:**:
 - The heap is for application-level objects and is managed by the garbage collector.
 - The non-heap area is for JVM internals, such as class definitions, compiled code, and thread stacks.
 - Both heap and non-heap memory are created and managed by the JVM at startup, and together they make up the JVM’s memory footprint.
-Common Misconceptions:
+**Common Misconceptions:**
 - Some people think only the heap matters, but the JVM’s own memory (non-heap) is just as important for performance and stability.
 - The term “PermGen” was used before Java 8 for class metadata, but it was replaced by “Metaspace” in Java 8 and later.
-Summary Table:
+**Summary Table:**:
 | Memory Type | Purpose | Managed by GC? |
 | --- | --- | --- |
 | Heap | Java objects, instance variables | Yes |
@@ -794,7 +794,7 @@ According to the Java Virtual Machine (JVM) Specification, when a Java program r
 - Purpose: Used for native (non-Java) method calls, such as those using JNI (Java Native Interface).
 - Lifetime: Each thread has its own native method stack.
 
-Summary Table:
+**Summary Table:**:
 | Data Area | Thread-Shared or Per-Thread | Purpose |
 | --- | --- | --- |
 | Method Area | Shared | Class metadata, static fields, constants |
@@ -885,7 +885,7 @@ Alternative Heap Layouts
 - Instead of fixed contiguous generations, the heap is divided into many regions.
 - G1, for example, still logically separates young and old regions, but the physical layout is more flexible.
 
-Summary Table
+**Summary Table:**
 | Part | Purpose | Typical Contents |
 | --- | --- | --- |
 | Eden Space | New object allocation | Newly created objects |
@@ -968,10 +968,10 @@ Why was PermGen problematic?
 What happened to PermGen?
 - Removed in Java 8: Starting with Java 8, PermGen was replaced by a new memory area called Metaspace.
 - Metaspace improvements: Metaspace stores class metadata in native memory (outside the Java heap) and can grow automatically by default, reducing the risk of running out of space.
-Summary:
+**Summary:**:
 PermGen was a JVM memory area for class metadata, present before Java 8. It was removed and replaced by Metaspace in Java 8 to solve tuning and memory issues.
 
-Reasoning:
+**Reasoning:**:
 - You needed to know what PermGen was, what it stored, why it was problematic, and what replaced it.
 - The answer covers all these points and explains the transition to Metaspace.
 
@@ -1019,7 +1019,7 @@ PermGen vs. Metaspace in Java
 - Error Message:
 - PermGen: OutOfMemoryError: PermGen space
 - Metaspace: OutOfMemoryError: Metaspace
-Summary Table:
+**Summary Table:**:
 | Aspect | PermGen (Java 7 and below) | Metaspace (Java 8+) |
 | --- | --- | --- |
 | Memory Area | Java Heap | Native Memory |
@@ -1055,7 +1055,7 @@ Key points:
 Summary:
 Native (off-heap) memory is memory used by the JVM and Java applications that is outside the Java heap and not managed by the garbage collector. It’s used for JVM internals and can be allocated directly by applications via JNI, NIO direct buffers, or the Foreign Function & Memory API. Proper management is required to avoid memory leaks.
 
-Reasoning:
+**Reasoning:**:
 You asked for the full answer, so I provided a clear definition, examples of usage, management considerations, and why it matters. If you have any follow-up questions or want to explore related topics (like how to monitor native memory usage), feel free to ask!
 
 What is the code cache in HotSpot?
@@ -1123,7 +1123,7 @@ What should you look for?
 - If the code cache is consistently near full, consider increasing its size.
 - If you see frequent warnings about the code cache being full, it’s a sign to tune your JVM options.
 
-7. Summary Table
+7. **Summary Table:**
 | Aspect | Details |
 | --- | --- |
 | Purpose | Stores native code from JIT-compiled methods |
@@ -1199,7 +1199,7 @@ class MemoryLimits {
 Pro tip: In modern Java, interviewers may ask if “all objects” are created on the heap. The answer is technically no. Through a process called escape analysis, the JIT compiler can determine if an object never escapes the method it was created in. If so, it can perform scalar replacement, breaking the object down and allocating its primitives directly on the stack to save heap space and reduce garbage collection overhead.
 Understanding JVM memory organization helps diagnose memory and performance issues. Distinguishing among heap, non-heap, and native memory also provides context for garbage collection and reference types in the next lessons
 
-Reference Strengths
+## Reference Strengths
 Explore how different Java reference strengths—strong, soft, weak, and phantom—impact garbage collection and memory use. Understand how to manage object lifecycles for efficient resource handling and to avoid memory leaks, enabling you to write memory-conscious Java applications.
 Java usually manages memory automatically. However, we can influence when objects become eligible for garbage collection by using different reference strengths. Ordinary Java references are strong references by default. Soft references may be cleared in response to memory pressure, weak references may be cleared when an object is only weakly reachable, and phantom references support post-mortem cleanup tracking.
 The Four Reference Types in Java
@@ -1305,12 +1305,12 @@ Why not always use soft references for caching?
 Summary:
 A soft reference keeps its referent alive until the JVM is under memory pressure, at which point the GC may clear it. This makes them suitable for memory-sensitive caches, as entries are kept as long as memory is available and are reclaimed before an OutOfMemoryError is thrown.
 
-Reasoning:
+**Reasoning:**:
 - Soft references are weaker than strong references but stronger than weak references.
 - They are specifically designed to help with memory-sensitive caching.
 - The JVM guarantees that all softly reachable objects are cleared before running out of memory.
 
-Difference between Weak and Soft Reference:
+## Difference between Weak and Soft Reference:
 In Java, both weak and soft references are types of references that allow objects to be garbage collected, but they differ in how and when the garbage collector reclaims the referenced objects.
 - Weak Reference:
 A weak reference does not prevent its referent (the object it points to) from being reclaimed by the garbage collector. As soon as the only references to an object are weak references, the next garbage collection cycle can reclaim that object immediately. Weak references are typically used for things like canonicalizing maps, where you don’t want the reference to extend the object’s lifetime.
@@ -1326,7 +1326,7 @@ Key Differences:
 Why?
 - Weak references are for objects you don’t want to keep alive unnecessarily.
 - Soft references are for objects you’d like to keep alive if possible, but are willing to let go if memory is tight.
-Common Misconceptions:
+**Common Misconceptions:**
 - Some think both are the same, but the difference is in how aggressively the garbage collector reclaims the objects.
 - Neither type of reference guarantees immediate collection; it’s always up to the garbage collector, but weak references are much more likely to be cleared quickly.
 
@@ -1379,7 +1379,7 @@ class Demonstration {
 - Line 11: We create a Cleaner instance.
 - Line 14: We register our target object and the cleanup task. Once myObject becomes phantom reachable, the Cleaner thread will automatically invoke the run() method.
 
-What are phantom references?
+## What are phantom references?
 A phantom reference in Java is a type of reference provided by the java.lang.ref.PhantomReference class. It is the weakest among all reference types (strong, soft, weak, and phantom). Phantom references are used to determine exactly when an object has been removed from memory, allowing you to perform cleanup actions after garbage collection.
 Key Points:
 - Behavior:
@@ -1392,14 +1392,14 @@ Key Points:
 - Since Java 9, the referent of a phantom reference is cleared before the reference is enqueued. This prevents any possibility of resurrecting the object.
 - Usage:
 - Direct use of PhantomReference is rare. Instead, Java provides the java.lang.ref.Cleaner API, which is built on top of phantom references and is the recommended way to perform cleanup actions.
-Summary Table of Reference Types:
+**Summary Table of Reference Types**:
 | Reference Type | Cleared by GC? | get() returns referent? | Enqueued before/after GC? | Use Case |
 | --- | --- | --- | --- | --- |
 | Strong Reference | No | Yes | N/A | Normal object usage |
 | Soft Reference | Sometimes | Yes (if not GC’d) | After GC | Caching, memory-sensitive caches |
 | Weak Reference | Yes | Yes (if not GC’d) | After GC | Weak maps, canonicalizing caches |
 | Phantom Reference | Yes | Always null | After GC | Post-mortem cleanup |
-Common Misconceptions:
+**Common Misconceptions:**
 - You cannot use a phantom reference to access the object after it becomes phantom reachable.
 - Phantom references are not for preventing garbage collection, but for being notified after collection.
 
@@ -1452,7 +1452,7 @@ class CustomReference<T> extends PhantomReference<T> {
 Understanding how to use these reference types allows us to build memory-efficient applications and safely release resources without relying on the unpredictable and deprecated finalization mechanism.
 
 
-Garbage Collection
+## Garbage Collection
 
 In languages like C or C++, developers must explicitly allocate and free memory. Java takes a different approach. The Java Virtual Machine (JVM) automatically manages memory through a process called garbage collection.
 While this relieves us from manual memory management, understanding how the garbage collector operates is essential for tuning application performance, reducing latency, and succeeding in technical interviews.
@@ -1472,7 +1472,7 @@ Additional details:
 - Since Java 9, the default garbage collector is G1.
 Common misconception: Some people think the garbage collector immediately removes objects as soon as they become unreachable, but in reality, collection happens periodically according to the GC’s own schedule.
 
-Summary:
+**Summary:**
 The garbage collector is an automatic memory management system in Java that frees up memory by removing objects that are no longer in use, so developers don’t have to do it manually.
 
 Garbage Collection Process in Java
@@ -1498,10 +1498,10 @@ Java’s garbage collectors are based on the weak generational hypothesis: most 
 - Stop-the-world: Some phases of GC pause the application.
 - Tuning: JVM provides options to tune GC behavior for performance.
 
-Summary:
+**Summary:**
 Java’s garbage collector automatically reclaims memory by identifying unreachable objects. It uses a generational approach, with frequent, fast collections in the young generation and less frequent, more expensive collections in the old generation. Modern collectors aim to minimize pause times by doing more work concurrently.
 
-Common Misconceptions:
+**Common Misconceptions:**
 - Developers cannot force garbage collection; System.gc() is only a suggestion.
 - Not all objects are immediately collected after becoming unreachable; collection timing is up to the JVM.
 Modern Java Garbage Collectors
@@ -1528,7 +1528,7 @@ Java provides several garbage collectors (GCs) that you can choose from, dependi
 Deprecated/Removed Collectors
 - Concurrent Mark Sweep (CMS): Deprecated in Java 9, removed in Java 14. For low-latency needs, use G1, ZGC, or Shenandoah instead.
 
-Summary Table
+**Summary Table:**
 | Collector | Flag | Key Feature | Use Case |
 | --- | --- | --- | --- |
 | Serial | `-XX:+UseSerialGC` | Single-threaded, simple | Small heaps, single CPU |
@@ -1551,11 +1551,11 @@ Typical examples of GC roots include:
 - Active Java threads themselves.
 - Static fields of loaded classes (since these are referenced from the class itself, which is always reachable as long as the class is loaded).
 - JNI references (objects referenced from native code outside the JVM).
-Reasoning:
+**Reasoning:**:
 - The garbage collector needs a way to determine which objects are still in use. It does this by starting from GC roots and following references.
 - Anything that can be reached from a GC root is considered “alive.”
 - Anything that cannot be reached from any GC root is considered “dead” and can be safely collected.
-Common Misconceptions:
+**Common Misconceptions:**
 - Not all objects in memory are GC roots—only those with a special relationship to the JVM runtime (like stack variables, static fields, etc.).
 - GC roots are not themselves garbage collected; they anchor the object graph.
 Summary:
@@ -1578,9 +1578,9 @@ class GCRootDemonstration {
 - Line 7: We set the local variable to null. The byte array is no longer connected to the GC root. It is now unreachable and eligible for garbage collection.
 - Line 9: We request a garbage collection run, which will likely sweep up the unreachable byte array.
 
-What is the mark-and-sweep algorithm?
+## What is the mark-and-sweep algorithm?
 The mark-and-sweep algorithm is a classic garbage collection technique used in Java to automatically manage memory.
-Step-by-step explanation:
+**Step-by-step explanation**:
 - Mark Phase:
 - The garbage collector starts from a set of known “root” references (like local variables on the stack, static fields, etc.).
 - It traverses the object graph, following references from these roots.
@@ -1594,7 +1594,7 @@ Key Points:
 - It can cause “stop-the-world” pauses, where application threads are paused during collection.
 - It does not compact memory by default, so over time, memory fragmentation can occur.
 - Many modern Java collectors build upon or improve this basic approach (e.g., by adding compaction or concurrent marking).
-Common Misconceptions:
+**Common Misconceptions:**
 - Mark-and-sweep does not immediately reclaim memory as soon as an object becomes unreachable; it waits until the next collection cycle.
 - It does not move objects in memory (unless combined with a compaction phase).
 Why is this important in Java?
@@ -1603,7 +1603,7 @@ Why is this important in Java?
 
 Can we force the garbage collector to run?
 Answer: No, we cannot force the Java garbage collector to run. In Java, you can request garbage collection by calling System.gc() or Runtime.getRuntime().gc(). However, these methods only suggest to the JVM that it might be a good time to run the garbage collector—they do not guarantee that garbage collection will actually happen immediately, or at all.
-Reasoning:
+**Reasoning:**:
 - The Java Virtual Machine (JVM) manages memory and garbage collection internally.
 - When you call System.gc(), it acts as a hint to the JVM, not a command.
 - The JVM is free to ignore this request. In fact, some JVMs or configurations (like using the -XX:+DisableExplicitGC flag) will completely ignore explicit GC requests.
