@@ -1641,4 +1641,488 @@ Common Misconceptions
 - Sometimes, “major GC” and “full GC” are used interchangeably, but technically, a full GC always includes the entire heap, while a major GC may only include the old generation.
 - Minor GCs do not collect objects from the old generation.
 Understanding garbage collection concepts and collector behavior helps us evaluate JVM memory settings and collector options. In the next lesson, we will examine memory-tuning techniques and methods for detecting memory leaks.
-Clients et prospects d'American Express: Pour plus d'informations sur la façon dont nous protégeons votre vie privée, veuillez visiter www.americanexpress.com/privacy. Si vous êtes situé à l'extérieur des États-Unis, veuillez sélectionner votre emplacement à l'adresse www.americanexpress.com/change-country/ et accéder au lien de confidentialité en bas de la page.
+
+Memory Tuning
+
+What steps would we take to improve the memory footprint of a Java application?
+Step-by-Step Reasoning
+- Limit Object Lifetime and Scope
+- Why: Objects that are referenced longer than necessary stay in memory, increasing the footprint.
+- How:
+- Keep variable scope as small as possible so references are dropped promptly.
+- Avoid holding references in fields or collections longer than needed.
+- Release Resources Deterministically
+- Why: Relying on garbage collection or finalizers can delay resource release.
+- How:
+- Use try-with-resources for closing streams, files, sockets, etc.
+- Avoid using finalizers; they are unpredictable and discouraged.
+- Avoid Memory Leaks
+- Why: Unintentional object retention (e.g., in static fields, caches, listeners) can cause leaks.
+- How:
+- Remove listeners or callbacks when no longer needed.
+- Be careful with static fields and inner classes that may hold references to outer classes.
+- Clean up ThreadLocal variables after use.
+- Use Appropriate Data Structures
+- Why: Some data structures are more memory-efficient than others for certain use cases.
+- How:
+- Choose the right collection type (e.g., ArrayList vs. LinkedList).
+- Use primitive arrays or specialized collections (like Trove or FastUtil) when possible.
+- Optimize Caching Strategies
+- Why: Caches can grow unbounded and retain objects unnecessarily.
+- How:
+- Use weak or soft references for cache values if appropriate.
+- Use cache libraries (like Caffeine or Guava) that support size limits and eviction policies.
+- Tune the Garbage Collector
+- Why: The choice and configuration of the garbage collector can affect memory usage and performance.
+- How:
+- Select a GC algorithm suitable for your workload (e.g., G1, ZGC, Shenandoah).
+- Adjust heap size and GC parameters as needed.
+- Avoid Unnecessary Object Creation
+- Why: Creating too many temporary objects increases GC pressure.
+- How:
+- Reuse objects where possible (e.g., use StringBuilder instead of string concatenation in loops).
+- Use immutable objects wisely.
+- Explicit Nullification (with Caution)
+- Why: Setting references to null can help GC, but is rarely needed.
+- How:
+- Only set references to null in long-lived objects or data structures where scope-based collection is insufficient.
+
+Explanation
+- Why these steps matter:
+Java’s garbage collector is effective, but it can only reclaim memory for objects that are no longer referenced. Holding onto references unnecessarily, using inefficient data structures, or not releasing resources promptly can all increase your application’s memory footprint.
+- Common pitfalls:
+- Memory leaks from static fields, listeners, or caches.
+- Overly large caches without eviction policies.
+- Relying on finalizers instead of deterministic resource management.
+
+Addressing Misconceptions
+- Explicitly setting variables to null:
+This is rarely needed except in specific cases (like long-lived objects or data structures). The garbage collector will reclaim objects when they go out of scope.
+- Finalizers:
+Should be avoided; use try-with-resources or explicit close methods.
+
+Summary Table:
+| Step | Why It Helps | How To Do It |
+| --- | --- | --- |
+| Limit object lifetime/scope | Reduces retention | Smallest possible scope |
+| Release resources deterministically | Avoids delayed cleanup | try-with-resources |
+| Avoid memory leaks | Prevents unintentional retention | Remove listeners, clean ThreadLocals |
+| Use appropriate data structures | Reduces overhead | Choose right collections |
+| Optimize caching | Prevents unbounded growth | Weak/soft refs, cache libraries |
+| Tune garbage collector | Improves memory management | Choose/configure GC |
+| Avoid unnecessary object creation | Lowers GC pressure | Reuse objects |
+| Explicit nullification (rare) | Helps GC in special cases | Set to null in long-lived objects |
+
+If you have any specific scenario or code example you want to discuss, let me know!
+
+What is a memory leak in Java?
+A memory leak in Java occurs when objects that are no longer needed by the application remain reachable and cannot be garbage collected. This happens because there are still references to these objects somewhere in the code, even though the application will never use them again. As a result, the memory occupied by these objects is not reclaimed, leading to a gradual increase in memory usage. Over time, this can cause the application to run out of memory and throw an OutOfMemoryError.
+Reasoning:
+- In Java, memory management is handled by the garbage collector, which automatically frees memory used by objects that are no longer reachable.
+- However, if your code maintains references to objects that are no longer needed (for example, by storing them in static collections, caches, or not removing listeners), the garbage collector cannot reclaim that memory.
+- This is different from languages like C/C++, where memory leaks are caused by failing to manually free memory.
+Common causes of memory leaks in Java:
+- Static collections that grow indefinitely.
+- Unintentional references in caches or maps.
+- Not removing event listeners or callbacks.
+- Improper use of ThreadLocal variables.
+Detection:
+- Tools like VisualVM, Eclipse Memory Analyzer (MAT), or heap dumps can help identify memory leaks by showing which objects are consuming memory and why they are still referenced.
+Summary:
+A memory leak in Java is when unused objects remain referenced and cannot be garbage collected, leading to increased memory usage and potential application crashes.
+
+To see what a memory leak looks like in practice, consider a scenario where we unintentionally retain objects in a class-level collection.
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+class MemoryLeakDemonstration {
+private static final List<byte[]> cache = new ArrayList<>();
+
+public static void main(String[] args) {
+while (true) {
+simulateWork();
+}
+}
+
+private static void simulateWork() {
+byte[] data = new byte[1024 * 1024];
+cache.add(data);
+}
+}
+```
+- Line 5: We define a static List to act as a cache. Because it is static, it is anchored to the class object, which acts as a GC root.
+- Lines 7–9: We create an infinite loop that repeatedly calls our work simulation method.
+- Line 14: We allocate a new 1-megabyte array.
+- Line 15: We add the array to our static list. Because we never remove older entries or limit the size of this list, the application retains a strong reference to every single byte array created. The garbage collector cannot reclaim them, and the program will quickly crash with an OutOfMemoryError.
+
+Does Java’s automatic garbage collection resolve all memory leak issues?
+Answer: No, Java’s automatic garbage collection (GC) does not resolve all memory leak issues.
+Reasoning: Garbage collection in Java automatically frees memory by reclaiming objects that are no longer reachable—meaning there are no active references to them from any part of your program. However, if your code maintains references to objects that are no longer needed (even unintentionally), those objects remain “reachable” from the perspective of the GC and will not be collected. This situation is known as a “logical memory leak.”
+Common causes of memory leaks in Java include:
+- Static collections: If you store objects in a static list, map, or cache and never remove them, they remain referenced for the lifetime of the application.
+- Listeners and callbacks: If you register listeners or callbacks and forget to deregister them, the referenced objects cannot be collected.
+- Long-lived objects referencing short-lived objects: If a long-lived object (like a singleton or session) holds references to objects that should be short-lived, those objects will not be garbage collected.
+- Unclosed resources: Sometimes, resources like streams or connections can indirectly cause memory leaks if not properly closed, as they may reference other objects.
+Summary:
+Garbage collection only reclaims memory for objects that are truly unreachable. If your code keeps unnecessary references, the GC cannot help, and memory leaks can still occur. Developers must be careful to remove references to objects that are no longer needed.
+
+What is a classloader leak?
+A classloader leak occurs in Java when a classloader (often associated with a web application or module) cannot be garbage collected after the application is undeployed or reloaded. This happens because something in the JVM is still holding a reference—directly or indirectly—to the classloader or to classes/objects it loaded.
+Why does this happen?
+- Every Java class is loaded by a classloader.
+- Each class holds a reference to its classloader.
+- Every object holds a reference to its class.
+- If any object loaded by a classloader is still referenced (for example, by a static field, a running thread, or a ThreadLocal), then the classloader cannot be garbage collected.
+- As a result, all classes and resources loaded by that classloader remain in memory.
+What are the consequences?
+- Memory Leak: Over time, especially in application servers that redeploy applications, these leaks accumulate and cause increased memory usage.
+- Metaspace Growth: The class metadata is stored in Metaspace (or PermGen in older JVMs). If classloaders are not collected, Metaspace usage grows, potentially leading to OutOfMemoryError: Metaspace.
+- Resource Exhaustion: Eventually, the JVM may run out of memory, causing instability or crashes.
+Common causes:
+- Static fields referencing application classes or objects.
+- Threads started by the application that are not stopped on undeploy.
+- ThreadLocal variables holding references to application objects.
+- Caches or registries that are not cleared.
+Example:
+Suppose a web application creates a thread and stores a reference to an object loaded by its own classloader. If the thread is not stopped when the application is undeployed, the thread keeps running and holds onto the object, which holds onto its class, which holds onto the classloader. Thus, the classloader and all its classes cannot be garbage collected.
+
+Summary:
+A classloader leak is when a classloader (and everything it loaded) cannot be garbage collected due to lingering references, leading to memory leaks—especially problematic in environments where applications are frequently redeployed.
+
+What components of the JVM most affect a program's performance when tuning?
+The main components of the JVM that most affect a program’s performance when tuning are:
+- Heap (Memory Management):
+- The size and layout of the heap (including young and old generations) directly impact how much memory is available for objects and how often garbage collection occurs.
+- If the heap is too small, frequent garbage collections can slow down the application. If it’s too large, garbage collection pauses can become longer.
+- Garbage Collector (GC):
+- The choice of garbage collector (e.g., G1, Parallel, CMS, ZGC, Shenandoah) and its configuration (such as pause time goals, thread counts, region sizes) can greatly influence both throughput and latency.
+- Tuning GC parameters helps balance between application pause times and overall performance.
+- JIT Compiler (Just-In-Time Compilation):
+- The JIT compiler translates frequently used (“hot”) bytecode into optimized native machine code at runtime.
+- While the default settings are usually sufficient, advanced tuning (like tiered compilation or method inlining thresholds) can sometimes yield performance gains for specific workloads.
+Supporting Tools:
+- Modern observability tools like Java Flight Recorder (JFR) and JDK Mission Control (JMC) are essential for diagnosing performance bottlenecks and guiding tuning efforts.
+Why these matter:
+- These components are responsible for memory allocation, reclaiming unused memory, and optimizing code execution—all of which are critical to the speed and responsiveness of Java applications.
+- Tuning them allows you to adapt the JVM’s behavior to the specific needs and workload patterns of your application.
+Common Misconceptions:
+- Some may think only heap size matters, but the garbage collector’s behavior and JIT optimizations are equally important.
+- Others might overlook the value of profiling and observability tools, which are crucial for effective tuning.
+
+What is meant by improving Java's performance?
+Improving Java’s performance means optimizing how efficiently a Java application runs, based on specific goals such as:
+- Responsiveness (Latency):
+Making sure the application responds quickly to user input or requests, minimizing pause times (for example, in web servers or GUI applications).
+- Throughput:
+Maximizing the amount of work the application can do in a given time period (for example, processing as many transactions or data records as possible in batch jobs).
+- Footprint:
+Reducing the amount of system resources (like memory and CPU) the application uses, which is important for running Java in resource-constrained environments (like small containers or embedded devices).
+These goals often conflict with each other. For example, optimizing for very low latency might increase memory usage, while minimizing memory usage could increase pause times. Therefore, improving performance involves making trade-offs and choosing the right garbage collector and JVM settings to match your application’s needs.
+Reasoning:
+- Java applications run on the Java Virtual Machine (JVM), which manages memory and resources.
+- The JVM uses garbage collection to reclaim unused memory, but different garbage collectors have different strengths (some are better for low latency, others for high throughput).
+- Developers can tune JVM parameters and choose different collectors to optimize for their specific performance goals.
+Common Misconceptions:
+- It’s not possible to maximize all three goals (latency, throughput, footprint) at the same time; you must prioritize based on your application’s requirements.
+- Performance tuning is not just about making code run faster—it’s about meeting the right balance for your use case.
+
+Threading Fundamentals and Safety
+
+Differences Between a Process and a Thread in Java
+1. Definition
+- Process: A process is an independent program in execution. Each process has its own memory space, resources, and execution context.
+- Thread: A thread is a lightweight unit of execution within a process. Multiple threads can exist within a single process.
+2. Resource Allocation
+- Process: Each process has its own separate memory address space and resources (such as file handles, etc.).
+- Thread: Threads within the same process share the process’s memory and resources. However, each thread has its own stack and local variables.
+3. Communication
+- Process: Communication between processes (Inter-Process Communication, IPC) is complex and usually slower, as processes do not share memory by default.
+- Thread: Threads can communicate more easily and efficiently since they share the same memory space.
+4. Overhead
+- Process: Creating and managing processes is more resource-intensive and slower because of the need to allocate separate memory and resources.
+- Thread: Threads are more lightweight; creating and switching between threads is faster and requires less overhead.
+5. Failure Impact
+- Process: If one process crashes, it usually does not affect other processes.
+- Thread: If one thread encounters a problem (like an unhandled exception), it can potentially affect the entire process and other threads within it.
+6. Usage in Java
+- In Java, you can create threads by extending the Thread class or implementing the Runnable interface. Processes are typically managed by the operating system, but Java can start new processes using classes like ProcessBuilder.
+
+Why This Is Correct
+- Separation of resources: Processes are isolated; threads share resources.
+- Efficiency: Threads are designed for lightweight, concurrent tasks within a process.
+- Communication: Threads can easily share data; processes require special mechanisms.
+- Impact of failure: Threads can affect the whole process; processes are isolated from each other.
+
+Common Misconceptions
+- Some people think threads are completely independent like processes, but in Java, threads always run within a process and share its resources.
+- Others may believe that creating threads is as heavy as creating processes, but threads are much lighter.
+
+What are some of the problems with using threads?
+
+Problems with Using Threads in Java:
+- Complexity and Hard-to-Find Bugs:
+Writing multi-threaded code introduces complexity. Bugs like race conditions, deadlocks, and livelocks can occur. These issues are often subtle and may only appear under specific timing or load conditions, making them difficult to reproduce and debug.
+- Difficult to Maintain and Reason About:
+Code that uses threads is harder to read, understand, and maintain. The interactions between threads can be non-deterministic, leading to unpredictable behavior.
+- Resource Consumption:
+Each platform thread (traditional Java thread) consumes memory for its stack and requires CPU resources for context switching. Creating too many threads can exhaust system resources, leading to performance degradation or even application crashes.
+- Synchronization Overhead:
+When multiple threads access shared resources, synchronization mechanisms (like locks) are needed to prevent data corruption. However, excessive locking can lead to contention, reducing performance and potentially causing deadlocks.
+- Scalability Issues:
+Because of the overhead associated with threads, applications that create a large number of threads may not scale well, especially on systems with limited CPU cores.
+- Platform Dependency:
+The behavior and limits of threads can vary between operating systems and JVM implementations, leading to portability concerns.
+Recent Improvements:
+With Java 21, Virtual Threads were introduced. They are much lighter weight than platform threads, so creating thousands of them is feasible. However, even with virtual threads, issues like race conditions, deadlocks, and the complexity of concurrent code remain.
+
+Why is this the answer?
+- Threads introduce concurrency, which is inherently complex.
+- Bugs like race conditions and deadlocks are unique to concurrent programming.
+- Each thread uses system resources, and too many threads can overwhelm the JVM or OS.
+- Synchronization is necessary but can cause performance bottlenecks.
+- Virtual Threads help with resource usage but don’t solve logical concurrency problems.
+
+
+What is a deadlock?
+A deadlock is a situation in concurrent programming (like in Java multithreading) where two or more threads are blocked forever, each waiting for the other to release a resource. This happens when:
+- Each thread holds a lock (or resource) and waits for another lock that is held by another thread.
+- None of the threads can proceed because they are all waiting for each other to release resources.
+Example scenario:
+- Thread A holds Lock 1 and waits for Lock 2.
+- Thread B holds Lock 2 and waits for Lock 1.
+- Neither thread can continue, so both are stuck waiting forever.
+Why does this happen? Deadlocks typically occur when the following four conditions are met:
+- Mutual Exclusion: Resources involved are non-shareable.
+- Hold and Wait: Threads hold resources while waiting for others.
+- No Preemption: Resources cannot be forcibly taken away.
+- Circular Wait: There is a cycle of threads, each waiting for a resource held by the next.
+In Java: Deadlocks often happen when using synchronized blocks or methods, and multiple threads try to acquire locks in different orders.
+Summary:
+A deadlock is when two or more threads are stuck waiting for each other’s resources, and none can proceed, causing the program to halt at that point.
+
+We can see a classic deadlock scenario in the following example, where two threads attempt to acquire two locks in reverse order.
+```java
+import java.util.concurrent.CountDownLatch;
+
+class Demonstration {
+public static void main(String[] args) {
+Deadlock deadlock = new Deadlock();
+try {
+deadlock.runTest();
+} catch (InterruptedException ie) {
+Thread.currentThread().interrupt();
+}
+}
+}
+
+class Deadlock {
+private int counter = 0;
+private final Object lock1 = new Object();
+private final Object lock2 = new Object();
+CountDownLatch latch = new CountDownLatch(2);
+
+Runnable incrementer = () -> {
+try {
+for (int i = 0; i < 100; i++) {
+incrementCounter();
+System.out.println("Incrementing " + i);
+}
+} catch (InterruptedException ie) {
+Thread.currentThread().interrupt();
+}
+};
+
+Runnable decrementer = () -> {
+for (int i = 0; i < 100; i++) {
+decrementCounter();
+System.out.println("Decrementing " + i);
+}
+};
+
+public void runTest() throws InterruptedException {
+Thread thread1 = new Thread(incrementer);
+Thread thread2 = new Thread(decrementer);
+
+thread1.start();
+Thread.sleep(100);
+thread2.start();
+
+thread1.join();
+thread2.join();
+
+System.out.println("Done : " + counter);
+}
+
+void incrementCounter() throws InterruptedException {
+synchronized (lock1) {
+latch.countDown();
+System.out.println("Acquired lock1");
+latch.await();
+synchronized (lock2) {
+counter++;
+}
+}
+}
+
+void decrementCounter() {
+synchronized (lock2) {
+System.out.println("Acquired lock2");
+latch.countDown();
+synchronized (lock1) {
+counter--;
+}
+}
+}
+}
+```
+
+Note: This program is intentionally designed to demonstrate a deadlock. After both threads acquire different locks and wait for each other's lock, neither thread can continue. As a result, the program appears to hang indefinitely, and the join() calls in runTest() never return. This behavior is expected and illustrates how inconsistent lock acquisition order can cause a deadlock in concurrent programs.
+- Lines 16–17: We define two separate lock objects to control synchronization.
+- Lines 20–36: We define two Runnable tasks using modern lambda syntax. One task increments a counter, and the other decrements it.
+- Lines 43–44: We start the first thread and then pause the main thread slightly. This ensures the first thread acquires lock1 before the second thread starts and acquires lock2, staging the deadlock.
+- Lines 53–62: We define incrementCounter(), which synchronizes on lock1 first and then lock2.
+- Lines 64–71: We define decrementCounter(), which synchronizes on lock2 first and then lock1.
+
+What is liveness?
+Answer: In Java (and in concurrent programming in general), liveness refers to the property of a system or program that guarantees that certain actions or progress will eventually occur. In other words, a system is said to have liveness if it continues to make progress and does not get stuck indefinitely.
+For example, in the context of threads, liveness means that threads are able to execute and complete their tasks without getting permanently blocked or stuck. Common liveness problems include:
+- Deadlock: Two or more threads are waiting on each other to release resources, so none of them can proceed.
+- Starvation: A thread is perpetually denied access to resources and thus cannot make progress.
+- Livelock: Threads are not blocked, but they keep changing their state in response to each other and still cannot make progress.
+Reasoning:
+- Liveness is important because it ensures that your Java application remains responsive and functional.
+- If liveness is violated (e.g., due to deadlock), your program may freeze or fail to complete its tasks.
+Summary:
+Liveness is the property that ensures a program (or its threads) continues to make progress and does not get stuck indefinitely, such as in deadlock or starvation situations.
+
+What is a livelock?
+A livelock is a situation in concurrent programming (including Java) where two or more threads are actively responding to each other, but none of them are able to make actual progress. Unlike a deadlock, where threads are stuck waiting and do nothing, in a livelock, threads keep changing their state in response to each other, but the overall system does not move forward.
+Example/Analogy:
+Imagine two people trying to pass each other in a narrow hallway. Both step aside to let the other pass, but they both step in the same direction at the same time, blocking each other again. They keep repeating this polite dance, never actually passing each other. They are both active, but not making progress.
+In Java:
+Livelocks can occur when threads repeatedly retry an operation that fails due to interference from other threads, and their retry logic causes them to continually yield to each other.
+Key Points:
+- Threads are not blocked (unlike deadlock), but are unable to proceed.
+- Threads keep changing state in response to each other.
+- No real work is accomplished even though threads are active.
+
+Why is this the answer?
+- The key difference between livelock and deadlock is that in livelock, threads are not stuck waiting—they are actively doing something, but not making progress.
+- The analogy helps illustrate the concept in a real-world scenario.
+- In Java, livelocks can happen with poorly designed retry or back-off logic in concurrent code.
+
+What is starvation?
+In Java (and in general concurrent programming), starvation is a situation where a thread is perpetually denied access to resources it needs to proceed with its work. This happens when other threads are continuously acquiring the resources or CPU time, preventing the “starved” thread from making progress.
+Reasoning:
+- Starvation often occurs when threads have unequal priorities, or when resource allocation policies are unfair.
+- For example, if a thread is waiting to acquire a lock, but other threads keep acquiring it before it gets a chance, the waiting thread may never proceed.
+- This is different from deadlock, where two or more threads are waiting for each other and none can proceed. In starvation, the thread could proceed if it ever got the resource, but it keeps getting “skipped over.”
+Example: Suppose you have several threads trying to access a synchronized block. If the scheduler always picks higher-priority threads, a lower-priority thread might never get a turn—this is starvation.
+Key Points:
+- Starvation is caused by unfair scheduling or resource allocation.
+- It can be prevented by using fair locks (like ReentrantLock with fairness set to true) or by ensuring all threads get a chance to execute.
+Summary:
+Starvation in Java is when a thread never gets CPU time or access to shared resources because other threads are always favored, causing it to be “starved” of the resources it needs to run.
+
+What are the valid ways to represent tasks that can be executed by threads in Java?
+
+Valid ways to represent tasks that can be executed by threads in Java:
+- Implementing the Runnable interface:
+- You create a class that implements Runnable and override its run() method.
+Example:
+
+```java
+class MyTask implements Runnable {
+public void run() {
+// task code here
+}
+}
+```
+
+- Implementing the Callable interface:
+- You create a class that implements Callable<V> and override its call() method, which can return a result and throw exceptions.
+Example:
+
+```java
+class MyTask implements Callable<Integer> {
+public Integer call() {
+// task code here
+return 42;
+}
+}
+```
+- Extending the Thread class:
+- You can create a subclass of Thread and override its run() method.
+- Example:
+
+```java
+class MyTask extends Thread {
+public void run() {
+// task code here
+}
+}
+```
+
+Reasoning:
+- All three approaches allow you to define the code that will run in a separate thread.
+- Runnable and Callable are preferred for flexibility and separation of task from thread management.
+- Callable is used when you need the task to return a result or throw a checked exception.
+- Extending Thread is less flexible (since Java only allows single inheritance), but it is still valid.
+Common Misconceptions:
+- Some people think you must always extend Thread, but implementing Runnable or Callable is often better practice.
+- Callable tasks are usually submitted to an ExecutorService, not directly to a Thread.
+Summary Table:
+| Approach | Method to Override | Returns Value | Throws Exception |
+| --- | --- | --- | --- |
+| Implement Runnable | run() | No | No |
+| Implement Callable | call() | Yes | Yes |
+| Extend Thread | run() | No | No |
+Let me know if you want to discuss when to use each approach, or if you have any follow-up questions!
+
+How does a daemon thread behave differently from a standard thread when the main application exits?
+
+When the main application (main thread) exits in Java:
+- Standard (non-daemon) threads: The Java Virtual Machine (JVM) will keep running until all non-daemon threads have finished their execution. The JVM waits for these threads to complete before shutting down.
+- Daemon threads: These are considered background threads. If only daemon threads are left running (i.e., all non-daemon threads have exited), the JVM will terminate immediately, and any running daemon threads are abruptly stopped without completing their execution.
+Reasoning:
+- Daemon threads are intended for background tasks (like garbage collection, monitoring, etc.) that should not prevent the JVM from exiting.
+- Non-daemon threads represent the main work of your application. The JVM assumes that as long as any non-daemon thread is running, the application is still doing important work and should not exit.
+Example:
+Suppose you start a daemon thread and a non-daemon thread. If the main thread finishes and only the daemon thread is left, the JVM will exit, and the daemon thread will be killed—even if it hasn’t finished its work.
+Common Misconception:
+Some people think daemon threads finish their tasks before the JVM exits, but in reality, they can be terminated at any point once only daemon threads remain.
+
+Summary:
+- JVM waits for non-daemon threads to finish before exiting.
+- Daemon threads are killed immediately when all non-daemon threads have exited.
+
+To understand this thread life cycle difference in practice, consider a standard inner thread printing 100 messages.
+
+```java
+Thread innerThread = new Thread(() -> {
+for (int i = 0; i < 100; i++) {
+System.out.println("I am a new thread!");
+}
+});
+innerThread.start();
+System.out.println("Main thread exiting");
+```
+
+- Lines 1–5: We create a thread that runs a simple loop 100 times.
+- Line 7: We print an exit message from the main thread. Even if the main thread reaches this line and exits, innerThread will continue running until all 100 messages are printed.
+
+Now, consider a similar snippet where the thread is marked as a daemon thread:
+
+```java
+Thread innerThread = new Thread(() -> {
+for (int i = 0; i < 100; i++) {
+System.out.println("I am a daemon thread!");
+}
+});
+innerThread.setDaemon(true);
+innerThread.start();
+System.out.println("Main thread exiting");
+```
+
+- Line 6: We mark the thread as a daemon thread before starting it. Because innerThread is a daemon, it may only print a few messages before the JVM terminates it upon the main thread exiting.
